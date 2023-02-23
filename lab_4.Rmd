@@ -1,0 +1,157 @@
+---
+title: "rating curve"
+author: "Tim Covino"
+date: "2023-02-22"
+output: html_document
+---
+
+Here are some packages you will need. You may use/need others as well. 
+```{r}
+library(dataRetrieval)
+library(tidyverse)
+library(plotly)
+library(lubridate)
+library(patchwork)
+library(broom)
+```
+
+We can begin by defining some dataRetrieval parameters. 
+```{r}
+
+site <- "06192500"
+
+```
+
+## Problem 1 
+
+Download rating curve data using readNWISmeas. Use ?readNWISmeas for details. 
+
+I will write this code and raname the columns so we are all working with the same variable names. qual is an assessment of how good the measurement was. 
+```{r}
+rate_df <- readNWISmeas(siteNumbers = site) %>% 
+  select(site_no, date = measurement_dt, stage_ft = gage_height_va, q_cfs = discharge_va, qual = measured_rating_diff)
+
+```
+
+A good first step is to plot a time series of Q vs date, and stage vs. date. This is good to just have an initial look and see if anything looks weird. Using patchwork put the time series of stage on top and the time series of Q on bottom, color by qual. 
+```{r}
+
+```
+
+### Q1.1. (3 pts)
+
+- comment on temporal patterns in stage and Q. What are some key aspects of these time series that jump out at you? Given that rating curves are non-stationary (i.e., they can change through time) can you make some initial judgements on temporal groupings that you might apply for developing rating curves?  
+
+## Problem 2
+
+From the analysis above it seems likely that we will need to have some temporal groupings. It is quite common to group between large flow (i.e., flood) events. So you might have one rating curve for about 10 years, then there is a flood and the curve changes. That one may be accurate for about 10 years until the next large flood. In general, anytime there is major reworking of the channel, channel geometry/morphology changes as a function of aggradation or degradation - then we need to update the rating curve. Rating curves can also change more slowly over time as a function of slower deposition or scouring processes. 
+
+First - make plot using ALL of rating curve data. Put stage on x and Q on y. Color by date. 
+You can make the color ramp more distinct using:
+scale_color_gradient(low = 'cyan', high = 'deeppink', trans = "date")
+Feel free to play with colors to see what gives you good separation between low and high. 
+
+```{r}
+
+  
+```
+
+### Q2.1. (2 pt)
+- what do you notice when you plot ALL of the rating curve data? 
+
+
+## Problem 3
+
+Using your plots from above, in particularly the plot of stage over time, start exploring some temporal groupings of stage-discharge. You can make sub-sets of the rate_df by making a year column using lubridate and then filtering for years.
+
+For this task try to find some periods that have fairly tight relationships between stage and Q, without obvious deviations. 
+
+When making these plots add a smooth line to aid in visually assessing the scatter around the trendline. You do that with:
+
+ geom_smooth(color = "red")
+
+```{r}
+
+
+```
+
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+Once you have ~3 groupings plot the rating curves, add geom_smooth to each, set the limits to 
+
+xlim(0, 11) +
+ylim(0, 40000) +
+
+And stack them on top of each other using patchwork. 
+
+### Q3.1. (2 pts)
+
+- Do your rating curves span the same range of stage and Q? What happens if you try to extrapolate beyond the bounds of a rating curve? 
+
+
+
+
+## Problem 4
+
+Now we need to fit a function (i.e., equation) to each of your stage-discharge relationships. 
+
+We do this by fitting a non-linear model to the data. Remebmer that stage-discharge relations (the rating curve) are typically non-linear. We will use nls, which you can read up on with “?nls”. In this model a1, C, and n are parameters and we have to give them initial values. After that R will find the best fit for each parameter. The equation will be Q = C(Stage - a1)^n where C is a fitting parameter, a1 is the depth at which flow is 0 (so if flow was zero at 1 ft depth a1 = 1), and n is an exponent that gives the function its concave up shape.
+
+I would recommend starting with a1 = 0. Here is some example code for how you would fit a non-linear model to your data:
+
+Here we give a1 an initial value. Note that the a1 offset is something we are adding to the nls. It is not one of the parameters of the model, so it won't be fit. This is something we would evaluate by looking at the data. 
+
+a1 <- 0 
+
+Next we run the model. This code below says run a nls model where Discharge = C*(gage height - a1)^n. In R statistical models the ~ is similar to equals. It basically means predict discharge using this function. 
+
+model <- nls(discharge~C*(gage_height-a1)^n, start = list(C = 1, n = 1.2), data = meas, trace=T)
+
+Keep in mind that in the line of code above you will need to change the code to use YOUR specific variable names and df. What I have provided is generic. Also keep in mind you may have to change the initial value for a1, C, and/or n. If they aren't close enough initial values the model will fail to converge on an optimal set of parameters. 
+
+After you have gotten your model to converge you can get a summary of the output. 
+summary(model)
+
+And we can also pull out the parameters that we are interested in (C and n).
+C1 <- coef(model)[1]
+n1 <- coef(model)[2]
+
+We can also put the parameters into an equation in the eqn_a <- 
+That can then be used to add the equation to the ggplot. 
+```{r}
+
+
+
+# test the parsing of the equation
+parse(text = eqn_a)
+
+```
+
+
+#Now we can plot the data and add a geom_smooth. Next we annotate the figure with the equations (i.e., the rating curve).
+```{r}
+
+formula <- y ~ C * x^(n)
+
+
+  
+```
+
+
+
+Q4.1. (3 pts)
+
+- Please provide your paramater values (a, C, and n) for each of your rating curves. 
+
+- What is your calculated Q for a stage of 3 ft with each of your rating curves? 
+
+- Is it appropriate to use any of your rating curves to calculate flow at a stage of 12 ft? Why or why not? 
