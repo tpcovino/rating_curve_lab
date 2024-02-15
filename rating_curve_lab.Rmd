@@ -1,9 +1,24 @@
 ---
-title: "rating curve"
-author: "Tim Covino"
-date: "2023-02-22"
-output: html_document
+author: "YOUR NAME"
+date: ""
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
 ---
+
+# Rating cuve lab (15 pts) 
+
+In this lab we will analyze rating curve data. A rating curve is a relationship between stage (depth of water) and discharge (flow). In natural rivers these relationships tend to change over time as the geomorphology of the river channel changes. When this happens the rating curve needs to be updated.
+
+### This is knitr settings. Knitr is a package that will turn this Rmd to an html. 
+```{r}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, results = FALSE)
+
+```
+
 
 Here are some packages you will need. You may use/need others as well. 
 ```{r}
@@ -46,7 +61,7 @@ A good first step is to plot a time series of Q vs date, and stage vs. date. Thi
 
 From the analysis above it seems likely that we will need to have some temporal groupings. It is quite common to group between large flow (i.e., flood) events. So you might have one rating curve for about 10 years, then there is a flood and the curve changes. That one may be accurate for about 10 years until the next large flood. In general, anytime there is major reworking of the channel, channel geometry/morphology changes as a function of aggradation or degradation - then we need to update the rating curve. Rating curves can also change more slowly over time as a function of slower deposition or scouring processes. 
 
-First - make plot using ALL of rating curve data. Put stage on x and Q on y. Color by date. 
+First - make a plot using ALL of rating curve data. Put stage on x and Q on y. Color by date. 
 You can make the color ramp more distinct using:
 scale_color_gradient(low = 'cyan', high = 'deeppink', trans = "date")
 Feel free to play with colors to see what gives you good separation between low and high. 
@@ -93,7 +108,7 @@ ylim(0, 40000) +
 
 And stack them on top of each other using patchwork. 
 
-### Q3.1. (2 pts)
+### Q3.1. (5 pts)
 
 - Do your rating curves span the same range of stage and Q? What happens if you try to extrapolate beyond the bounds of a rating curve? 
 
@@ -104,7 +119,7 @@ And stack them on top of each other using patchwork.
 
 Now we need to fit a function (i.e., equation) to each of your stage-discharge relationships. 
 
-We do this by fitting a non-linear model to the data. Remebmer that stage-discharge relations (the rating curve) are typically non-linear. We will use nls, which you can read up on with “?nls”. In this model a1, C, and n are parameters and we have to give them initial values. After that R will find the best fit for each parameter. The equation will be Q = C(Stage - a1)^n where C is a fitting parameter, a1 is the depth at which flow is 0 (so if flow was zero at 1 ft depth a1 = 1), and n is an exponent that gives the function its concave up shape.
+We do this by fitting a non-linear model to the data. Remembmer that stage-discharge relations (the rating curve) are typically non-linear. We will use nls, which you can read up on with “?nls”. In this model a1, C, and n are parameters and we have to give them initial values. After that, R will find the best fit for each parameter. The equation will be Q = C(Stage - a1)^n where C is a fitting parameter, a1 is the depth at which flow is 0 (so if flow was zero at 1 ft depth a1 = 1), and n is an exponent that gives the function its concave up shape.
 
 I would recommend starting with a1 = 0. Here is some example code for how you would fit a non-linear model to your data:
 
@@ -132,7 +147,7 @@ That can then be used to add the equation to the ggplot.
 
 
 # test the parsing of the equation
-parse(text = eqn_a)
+#parse(text = eqn_a)# you will need to uncomment this code. 
 
 ```
 
@@ -140,7 +155,7 @@ parse(text = eqn_a)
 #Now we can plot the data and add a geom_smooth. Next we annotate the figure with the equations (i.e., the rating curve).
 ```{r}
 
-formula <- y ~ C * x^(n)
+#formula <- y ~ C * x^(n) # you will need to uncomment this code. 
 
 
   
@@ -148,9 +163,9 @@ formula <- y ~ C * x^(n)
 
 
 
-Q4.1. (3 pts)
+Q4.1. (5 pts)
 
-- Please provide your paramater values (a, C, and n) for each of your rating curves. 
+- Please provide your paramater values (a, C, and n) for each of your rating curves (hint: you should have 3 rating curves for 3 time periods). 
 
 - What is your calculated Q for a stage of 3 ft with each of your rating curves? 
 
